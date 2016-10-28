@@ -4,6 +4,7 @@
 # Team
  - Jingjun Zhang, zhangjingjun
  - Yifei Gao, EFGAO 
+
 # Collaboration
  - Jingjun Zhang: The frame work of HTML and javascript code;
  Including generating four type of data visualization randomly, generating two points to indicate the test chart, order the sequence of the different data vis. 
@@ -38,12 +39,11 @@
  Also we handle the case which the actual percent exactly equals to participant percent: we let the result to be 0 instead of -3.
  Please refer to the `master-experiment.csv` to check the full test result.
  
- The final result is
- 
- 1. Bar Chart: 1.87
- 2. Bubble Chart: 2.55
- 3. Stack Bar Chart: 2.60
- 4. Pie Chart: 2.81
+ The final result is: 
+	Bar Chart: 1.87
+	Bubble Chart: 2.55
+	Stack Bar Chart: 2.60
+	Pie Chart: 2.81
  
  Surprisingly, we find that the bubble chart is exceed the stack bar chart which is contrary to the result of Cleveland & McGill's Results.
  We conclude some reasons for that: First the stack bar chart is relatively small to other charts, which increase the difficulty of judging the size of that. Second the bubble chart is clustered and it might be easier for comparing than the scattered bubble chart.
