@@ -1,5 +1,5 @@
 # Replicating a Classic Experiment  
- Project link: ["Experiment"](http://EFGAO.github.io/04-Experiment/index.html).
+ Project link: ["Experiment"](https://zhangjingjun.github.io/Classic-DataVis-Experiment/).
  
 # Team
  - Jingjun Zhang, zhangjingjun
