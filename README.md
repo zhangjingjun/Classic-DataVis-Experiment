@@ -28,6 +28,7 @@
  
 ## Pie Chart
  ![First Stage](img/PieChart.png)
+
  
 ## Bubble Chart
  ![First Stage](img/BubbleChart.png)
