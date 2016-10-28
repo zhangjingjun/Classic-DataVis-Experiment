@@ -208,7 +208,7 @@
 
 	function nextTest(){
 		console.log(currentTrialOrder);
-		if (currentTrialOrder==-1) {
+		if (currentTrialOrder == -1) {
 			pText.removeChild(initPText);
 			
 			opdiv.removeChild(disagreebutton);
@@ -227,7 +227,7 @@
 			var bubbleChartError = 0;
 		} else {
 			reportedPercent = parseInt(document.getElementById("inputbox").value);
-			errorRecorded = Math.log(Math.abs(truePercent - reportedPercent) + 1/8)/ Math.LN2;
+			errorRecorded = Math.log(Math.abs(truePercent - reportedPercent) + 1 / 8) / Math.LN2;
 			resultList[currentTrialOrder] = {"ParticipantID": randomPID, "TrialNum": currentTrialOrder, "VisType": chartTypeList[chartOrder[currentTrialOrder]], "TruePercent": truePercent, "ReportedPercent": reportedPercent, "Error": errorRecorded};
 
 			stringList[currentTrialOrder] = [randomPID.toString(), currentTrialOrder.toString(), chartTypeList[chartOrder[currentTrialOrder]], truePercent.toString(),  reportedPercent.toString(), errorRecorded.toString()];
@@ -235,14 +235,14 @@
 			delFunctionList[chartOrder[currentTrialOrder]]();
 			currentTrialOrder++;
 
-			if (currentTrialOrder>=chartTypeNum*trialMultiplier) {
+			if (currentTrialOrder >= chartTypeNum * trialMultiplier) {
 				pText.removeChild(testPText);
 				
 				opdiv.removeChild(inputbox);
 				opdiv.removeChild(nextbutton);
 
 				generateRandomList();
-				svg.selectAll("circle").data(randomList).enter().append("circle").attr("cx", function(d, i){return xscale(d%itemNum);}).attr("cy", function(d, i){return yscale(d);}).attr("r", function(d, i){return 4000/d;}).attr("stroke", "#b0b0b0").attr("fill", "none");
+				svg.selectAll("circle").data(randomList).enter().append("circle").attr("cx", function(d, i){return xscale(d % itemNum);}).attr("cy", function(d, i){return yscale(d);}).attr("r", function(d, i){return 4000 / d;}).attr("stroke", "#b0b0b0").attr("fill", "none");
 				
 				pText.appendChild(finishPText);
 				opdiv.appendChild(buttonRestart);
@@ -332,41 +332,41 @@
 	}
 
 	function generateRandomList () {
-		for (i=0; i<itemNum; i++) {
-			randomList[i] = Math.random()*(randomRange-minRandomValue)+minRandomValue;
+		for (i = 0; i < itemNum; i++) {
+			randomList[i] = Math.random() * (randomRange - minRandomValue) + minRandomValue;
 		}
 	}
 
 	function selectRandomTwo () {
 		randomSelectTwo = [-1, -1];
-		randomSelectTwo[0] = Math.floor(Math.random()*itemNum);
-		while (randomSelectTwo[1] == -1 || randomSelectTwo[0]==randomSelectTwo[1]) {
-			randomSelectTwo[1] = Math.floor(Math.random()*itemNum);
+		randomSelectTwo[0] = Math.floor(Math.random() * itemNum);
+		while (randomSelectTwo[1] == -1 || randomSelectTwo[0] == randomSelectTwo[1]) {
+			randomSelectTwo[1] = Math.floor(Math.random() * itemNum);
 		}
 	}
 
 	function calcTruePercent () {
 		a = Math.min(randomList[randomSelectTwo[0]], randomList[randomSelectTwo[1]]);
 		b = Math.max(randomList[randomSelectTwo[0]], randomList[randomSelectTwo[1]]);
-		truePercent = Math.round(100*a/b);
+		truePercent = Math.round(100 * a / b);
 	}
 
 
 	function generateChartOrder() {
 		chartOrder = [];
-		for (i=0; i<trialMultiplier; i++){
+		for (i = 0; i < trialMultiplier; i++){
 			temp = [];
-			for (t=0; t<chartTypeNum; t++) {
+			for (t = 0; t < chartTypeNum; t++) {
 				temp[t] = t;
 			}
-			while (temp.length>0) {
-				n = Math.floor(Math.random()*temp.length);
-				chartOrder[chartOrder.length]=temp[n];
+			while (temp.length > 0) {
+				n = Math.floor(Math.random() * temp.length);
+				chartOrder[chartOrder.length] = temp[n];
 				temp.splice(n, 1);
 			}
 		}
 		currentTrialOrder = -1;
-		randomPID = Math.floor(Math.random()*(maxPID-minPID)+minPID);
+		randomPID = Math.floor(Math.random() * (maxPID - minPID) + minPID);
 	}
 
 	function generateBarChart() {
@@ -375,11 +375,11 @@
 		selectRandomTwo();
 		calcTruePercent();
 
-		for (i=0; i<randomList.length; i++) {
-			svg.append("rect").attr("x", xscale(i+0.5)-autoBarWidth/2).attr("y", yscale(randomList[i])).attr("width", autoBarWidth).attr("height", yscale(0)-yscale(randomList[i])).attr("stroke", "#b0b0b0").attr("fill", "none");
+		for (i = 0; i < randomList.length; i++) {
+			svg.append("rect").attr("x", xscale(i + 0.5) - autoBarWidth / 2).attr("y", yscale(randomList[i])).attr("width", autoBarWidth).attr("height", yscale(0) - yscale(randomList[i])).attr("stroke", "#b0b0b0").attr("fill", "none");
 		}
-		svg.append("circle").attr("cx", xscale(randomSelectTwo[0]+0.5)).attr("cy", yscale(randomList[randomSelectTwo[0]]/2)).attr("r", 2).attr("fill", "black");
-		svg.append("circle").attr("cx", xscale(randomSelectTwo[1]+0.5)).attr("cy", yscale(randomList[randomSelectTwo[1]]/2)).attr("r", 2).attr("fill", "black");
+		svg.append("circle").attr("cx", xscale(randomSelectTwo[0] + 0.5)).attr("cy", yscale(randomList[randomSelectTwo[0]] / 2)).attr("r", 2).attr("fill", "black");
+		svg.append("circle").attr("cx", xscale(randomSelectTwo[1] + 0.5)).attr("cy", yscale(randomList[randomSelectTwo[1]] / 2)).attr("r", 2).attr("fill", "black");
 		svg.append("line").attr("x1", 0).attr("x2", svgWidth).attr("y1", yscale(0)).attr("y2", yscale(0)).attr("stroke", "#b0b0b0");	
 	}
 
@@ -395,8 +395,8 @@
 		generateRandomList();
 		selectRandomTwo();
 		calcTruePercent();
-		var arcs = svg.selectAll("g").data(pie(randomList)).enter().append("g").attr("transform", "translate("+svgWidth/2+", "+svgHeight/2+")");
-		arcs.append("path").attr("stroke", "#b0b0b0").attr("fill", "none").attr("d", function(d){if(d.value==randomList[randomSelectTwo[0]] || d.value==randomList[randomSelectTwo[1]]){x=arc.centroid(d)[0]; y=arc.centroid(d)[1]; svg.append("circle").attr("r", 2).attr("fill", "black").attr("transform", "translate("+(svgWidth/2+x)+", "+(svgHeight/2+y)+")");} return arc(d);});
+		var arcs = svg.selectAll("g").data(pie(randomList)).enter().append("g").attr("transform", "translate(" + svgWidth / 2 + ", " + svgHeight / 2 +")");
+		arcs.append("path").attr("stroke", "#b0b0b0").attr("fill", "none").attr("d", function(d){if (d.value == randomList[randomSelectTwo[0]] || d.value == randomList[randomSelectTwo[1]]){x = arc.centroid(d)[0]; y = arc.centroid(d)[1]; svg.append("circle").attr("r", 2).attr("fill", "black").attr("transform", "translate(" + (svgWidth / 2 + x) + ", " + (svgHeight / 2 + y) + ")");} return arc(d);});
 	}
 
 	function removePieChart() {
@@ -412,15 +412,15 @@
 		selectRandomTwo();
 		calcTruePercent();
 		sum = 0;
-		for (i=0; i<randomList.length; i++){
+		for (i = 0; i < randomList.length; i++){
 			sum += randomList[i];
 		}
 		ypoint = yscale(0);
-		for (i=0; i<randomList.length; i++) {
-			ypoint -= hscale(randomRange*randomList[i]/sum);
-			svg.append("rect").attr("x", svgWidth/2-100).attr("y", ypoint).attr("width", 200).attr("height", hscale(randomRange*randomList[i]/sum)).attr("stroke", "#b0b0b0").attr("fill", "none");
-			if (i==randomSelectTwo[0] || i==randomSelectTwo[1]) {
-				svg.append("circle").attr("cx", svgWidth/2).attr("cy", ypoint+hscale(randomRange*randomList[i]/sum)/2).attr("r", 2).attr("fill", "black");
+		for (i = 0; i < randomList.length; i++) {
+			ypoint -= hscale(randomRange * randomList[i] / sum);
+			svg.append("rect").attr("x", svgWidth / 2 - 100).attr("y", ypoint).attr("width", 200).attr("height", hscale(randomRange * randomList[i] / sum)).attr("stroke", "#b0b0b0").attr("fill", "none");
+			if (i == randomSelectTwo[0] || i == randomSelectTwo[1]) {
+				svg.append("circle").attr("cx", svgWidth / 2).attr("cy", ypoint + hscale(randomRange * randomList[i] / sum) / 2).attr("r", 2).attr("fill", "black");
 			}
 		}
 		svg.append("line").attr("x1", 0).attr("x2", svgWidth).attr("y1", yscale(0)).attr("y2", yscale(0)).attr("stroke", "#b0b0b0");
@@ -439,14 +439,14 @@
 		selectRandomTwo();
 		calcTruePercent();
 		newlist = [];
-		for (i=0; i<randomList.length; i++){
-			newlist[i]={index: i, value: randomList[i]};
+		for (i = 0; i < randomList.length; i++){
+			newlist[i] = {index: i, value: randomList[i]};
 		}
-		var data ={"children": newlist};
+		var data = {"children": newlist};
 		
 		rdata = d3.hierarchy(data).sum(function(d) { return d.value; }).sort(function(a, b) { return b.value - a.value; });
 		var nodes = svg.selectAll(".node").data(pack(rdata).descendants()).enter().append("g").attr("transform", function(d) {return "translate(" + d.x + "," + d.y + ")"; });
-		nodes.append("circle").attr("r", function(d) {if (d.value==randomList[randomSelectTwo[0]] || d.value==randomList[randomSelectTwo[1]]) {svg.append("circle").attr("r", 2).attr("fill", "black").attr("transform", "translate("+d.x+", "+d.y+")");} return d.r; }).attr("stroke", function(d){for (i=0; i<randomList.length; i++) {if(randomList[i]==d.value) {return "#b0b0b0";}} return "#f8f8f8";}).attr("fill", "none");
+		nodes.append("circle").attr("r", function(d) {if (d.value == randomList[randomSelectTwo[0]] || d.value == randomList[randomSelectTwo[1]]) {svg.append("circle").attr("r", 2).attr("fill", "black").attr("transform", "translate(" + d.x + ", " + d.y + ")");} return d.r; }).attr("stroke", function(d){for (i = 0; i < randomList.length; i++) {if (randomList[i] == d.value) {return "#b0b0b0";}} return "#f8f8f8";}).attr("fill", "none");
 	}
 
 	function removeBubbleChart() {
