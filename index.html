@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Replicating a Classic Experiment</title>
+	<link href="https://fonts.googleapis.com/css?family=Exo+2|Poiret+One" rel="stylesheet">
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<style type="text/css">
+		body {
+			background-color: #ffffff;
+      		color: #000000;
+      		font-size: large;
+      		font-family: 'Exo 2', sans-serif;
+      		margin-left: auto;
+      		margin-right: auto;
+		}
+		div {
+			background-color: #ffffff;
+      		color: #000000;
+      		font-size: large;
+      		font-family: 'Exo 2', sans-serif;
+      		width: 700px;
+      		height: auto;
+      		text-align: center;
+      		margin-left: auto;
+      		margin-right: auto;
+		}
+		header {
+			background-color: #ffffff;
+      		color: #000000;
+      		font-size: 24pt;
+      		font-family: 'Exo 2', sans-serif;
+      		width: 740px;
+      		text-align: center;
+      		margin-left: auto;
+      		margin-right: auto;
+      		margin-top: 10px;
+      		margin-bottom: 10px;
+		}
+		#frametable {
+			background-color: #ffffff;
+      		color: #000000;
+      		font-size: large;
+      		font-family: 'Exo 2', sans-serif;
+      		text-align: center;
+      		margin-left: auto;
+      		margin-right: auto;
+		}
+		button {
+			background-color: #b0b0b0;
+      		color: #000000;
+      		font-size: large;
+      		font-family: 'Exo 2', sans-serif;
+      		width: 200px;
+      		height: 50px;
+      		text-align: center;
+      		margin-left: 20px;
+      		margin-right: 20px;
+      		border: 0;
+		}
+		input {
+			background-color: #ffffff;
+      		color: #000000;
+      		font-size: large;
+      		font-family: 'Exo 2', sans-serif;
+      		width: 200px;
+      		height: 50px;
+      		text-align: center;
+      		margin-left: 20px;
+      		margin-right: 20px;
+      		border: 5;
+		}
+		#svgdiv {
+			background-color: #f8f8f8; 
+		}
+	</style>
+</head>
+<body>
+<header>Replicating a Classic Experiment</header>
+<table id="frametable">
+	<tr>
+		<div id="svgdiv">
+		
+		</div>
+	</tr>
+	<tr>
+		<div id="textdiv">
+		</div>
+	</tr>
+	<tr>
+		<div id="opdiv">
+
+		</div>
+	</tr>
+
+</table>
+
+<script>
+	console.log(d3);
+	var svgWidth = 680;
+  	var svgHeight = 520;
+  	var margin = {top:20,right:20,bottom:20,left:20};
+  	var chartWidth = svgWidth - margin.left - margin.right;
+  	var chartHeight = svgHeight - margin.top - margin.bottom;
+  	
+  	var itemNum = 10;
+  	var randomRange = 100;
+  	var minRandomValue = 10;
+  	var randomList = [];
+  	var randomSelectTwo = [];
+  	var truePercent = -1;
+
+  	var trialMultiplier = 20;
+  	var addFunctionList = [generateBarChart, generatePieChart, generateStackedBar, generateBubbleChart];
+  	var delFunctionList = [removeBarChart, removePieChart, removeStackedBar, removeBubbleChart];
+  	var chartTypeList = ["Bar Chart", "Pie Chart", "Stacked Bar Chart", "Bubble Chart"];
+  	var chartTypeNum = 4;
+  	var chartOrder = [];
+  	var currentTrialOrder = -1;
+  	var maxPID = 100000;
+  	var minPID = 10000;
+  	var randomPID = -1;
+	var barChartError = 0;
+	var pieChartError = 0;
+	var stackChartError = 0;
+	var bubbleChartError = 0;
+
+  	var columnNameList = ["ParticipantID", "TrialNum", "VisType", "TruePercent", "ReportedPercent", "Error"];
+  	var resultList = [];
+  	var stringList = [];
+  	var csvContent;
+	var printContent;
+  	
+  	var autoBarWidth = chartWidth/itemNum-20;
+  	var pieRadius = 200;
+  	var opacityValue = 0.5;
+  	var transitionDuration = 1000;
+
+	var xscale = d3.scaleLinear().domain([0, itemNum]).range([margin.left, chartWidth+margin.left]);
+	var yscale = d3.scaleLinear().domain([0, randomRange]).range([chartHeight+margin.top, margin.top]);
+	var hscale = d3.scaleLinear().domain([0, randomRange]).range([0, chartHeight]);
+	var cscale = d3.scaleLinear().domain([0, randomRange]).range(["red", "blue"]);
+
+	var initText = "In this experiment, you are asked to judge what is the percentage of a smaller value to a larger value in several charts. \nWe won't record any other information from you except your answers. \nClick the \"agree\" button to begin. \n\nThank you!";
+	var testText = "Two values are marked with dots. \nWhat do you think the percentage of the smaller value to the larger vlaue? \nPlease put your answer below. \ne.g. If you think the smaller one is exactly a half of the bigger one, please input\"50\".";
+	var finishText = "Thanks!";
+
+	var buttonDisagree = document.createElement("button");
+	buttonDisagree.appendChild(document.createTextNode("DISAGREE"));
+	buttonDisagree.id = "disagreebutton";
+	buttonDisagree.onclick = disagreeClicked;
+	
+	var buttonAgree = document.createElement("button");
+	buttonAgree.appendChild(document.createTextNode("AGREE"));
+	buttonAgree.id = "agreebutton";
+	buttonAgree.onclick = nextTest;
+	
+	var buttonNext = document.createElement("button");
+	buttonNext.appendChild(document.createTextNode("NEXT"));
+	buttonNext.id = "nextbutton";
+	buttonNext.onclick = nextTest;
+	
+	var buttonRestart = document.createElement("button");
+	buttonRestart.appendChild(document.createTextNode("RESTART"));
+	buttonRestart.id = "restartbutton";
+	buttonRestart.onclick = restartWin;
+	
+	var inputBox = document.createElement("input");
+	inputBox.type = "number";
+	inputBox.min = "0";
+	inputBox.max = "100";
+	inputBox.step = "1";
+	inputBox.value = "0";
+	inputBox.id = "inputbox";
+	
+	var pText = document.createElement("p");
+	pText.id = "ptext";
+	
+	var initPText = document.createTextNode(initText);
+	initPText.id = "initptext";
+	var testPText = document.createTextNode(testText);
+	testPText.id = "testptext";
+	var finishPText = document.createTextNode(finishText);
+	finishPText.id = "finishptext";
+	
+	var textdiv = document.getElementById("textdiv");
+	var opdiv = document.getElementById("opdiv");
+	var svg = d3.select("#svgdiv").append("svg").attr("width", svgWidth).attr("height", svgHeight);
+	var resultTable = d3.select("#textdiv").append("talbe");
+	thead = resultTable.append("thead");
+    tbody = resultTable.append("tbody");
+
+	var arc = d3.arc().innerRadius(0).outerRadius(pieRadius);
+	var pie = d3.pie();
+	var pack = d3.pack();
+	pack.padding(2).size([svgWidth, svgHeight]);
+	
+	initTest();
+
+	function initTest(){
+		textdiv.appendChild(pText);
+		pText.appendChild(initPText);
+		opdiv.appendChild(buttonDisagree);
+		opdiv.appendChild(buttonAgree);
+		generateRandomList();
+		svg.selectAll("circle").data(randomList).enter().append("circle").attr("cx", function(d, i){return xscale(d%itemNum);}).attr("cy", function(d, i){return yscale(d);}).attr("r", function(d, i){return 4000/d;}).attr("stroke", "#b0b0b0").attr("fill", "none");
+		generateChartOrder();
+	}
+
+	function nextTest(){
+		console.log(currentTrialOrder);
+		if (currentTrialOrder==-1) {
+			pText.removeChild(initPText);
+			
+			opdiv.removeChild(disagreebutton);
+			opdiv.removeChild(agreebutton);
+			svg.selectAll("circle").remove();
+			
+			pText.appendChild(testPText);
+			opdiv.appendChild(inputBox);
+			opdiv.appendChild(buttonNext);
+
+			currentTrialOrder++;
+			addFunctionList[chartOrder[currentTrialOrder]]();
+			var barChartError = 0;
+			var pieChartError = 0;
+			var stackChartError = 0;
+			var bubbleChartError = 0;
+		} else {
+			reportedPercent = parseInt(document.getElementById("inputbox").value);
+			errorRecorded = Math.log(Math.abs(truePercent - reportedPercent) + 1/8)/ Math.LN2;
+			resultList[currentTrialOrder] = {"ParticipantID": randomPID, "TrialNum": currentTrialOrder, "VisType": chartTypeList[chartOrder[currentTrialOrder]], "TruePercent": truePercent, "ReportedPercent": reportedPercent, "Error": errorRecorded};
+
+			stringList[currentTrialOrder] = [randomPID.toString(), currentTrialOrder.toString(), chartTypeList[chartOrder[currentTrialOrder]], truePercent.toString(),  reportedPercent.toString(), errorRecorded.toString()];
+		
+			delFunctionList[chartOrder[currentTrialOrder]]();
+			currentTrialOrder++;
+
+			if (currentTrialOrder>=chartTypeNum*trialMultiplier) {
+				pText.removeChild(testPText);
+				
+				opdiv.removeChild(inputbox);
+				opdiv.removeChild(nextbutton);
+
+				generateRandomList();
+				svg.selectAll("circle").data(randomList).enter().append("circle").attr("cx", function(d, i){return xscale(d%itemNum);}).attr("cy", function(d, i){return yscale(d);}).attr("r", function(d, i){return 4000/d;}).attr("stroke", "#b0b0b0").attr("fill", "none");
+				
+				pText.appendChild(finishPText);
+				opdiv.appendChild(buttonRestart);
+				currentTrialOrder = -1;
+
+				console.log(resultList);
+
+				thead.append("tr").selectAll("th").data(columnNameList).enter().append("th").attr("style", "padding: 1px 4px").text( function(d, i){return columnNameList[i]; } );
+				var rows = tbody.selectAll("tr").data(resultList).enter().append("tr");
+				rows.append("td").html(function (d) {return d.ParticipantID;}).attr("style", "padding: 1px 4px");
+				rows.append("td").html(function (d) {return d.TrialNum;}).attr("style", "padding: 1px 4px");
+				rows.append("td").html(function (d) {return d.VisType;}).attr("style", "padding: 1px 4px");
+				rows.append("td").html(function (d) {return d.TruePercent;}).attr("style", "padding: 1px 4px");
+				rows.append("td").html(function (d) {return d.ReportedPercent;}).attr("style", "padding: 1px 4px");
+				rows.append("td").html(function (d) {return d.Error.toFixed(2);}).attr("style", "padding: 1px 4px");
+				//save resultList to master file and participant file in CSV.
+
+				for(i = 0; i < resultList.length; i++){
+					if(resultList[i].VisType == "Bar Chart"){
+						barChartError += resultList[i].Error;
+					}
+					else if(resultList[i].VisType == "Pie Chart"){
+						pieChartError += resultList[i].Error;
+					}
+					else if(resultList[i].VisType == "Stacked Bar Chart"){
+						stackChartError += resultList[i].Error;
+					}
+					else if(resultList[i].VisType == "Bubble Chart"){
+						bubbleChartError += resultList[i].Error;
+					}
+				}
+
+				barChartError = barChartError / trialMultiplier;
+				pieChartError = pieChartError / trialMultiplier;
+				stackChartError = stackChartError / trialMultiplier;
+				bubbleChartError = bubbleChartError / trialMultiplier;
+
+				csvContent = "data:text/csv;charset=utf-8,";
+				csvContent += "ParticipantID, TrialNum, VisType, TruePercent, ReportedPercent, Error \n";
+				stringList.forEach(function (infoArray, index) {
+					dataString = infoArray.join(",");
+					csvContent += index < stringList.length ? dataString +"\n" : dataString;
+				});
+				csvContent += "Bar Chart Error Rate, Pei Chart Error Rate, Stack Chart Error Rate, Bubble Chart Error Rate, \n";
+				csvContent += barChartError.toString() + ",";
+				csvContent += pieChartError.toString() + ",";
+				csvContent += stackChartError.toString() + ",";
+				csvContent += bubbleChartError.toString() + ",\n";
+                // offer a download link to download
+				var encodedUri = encodeURI(csvContent);
+				var link = document.createElement("a");
+				link.setAttribute("href", encodedUri);
+				link.setAttribute("download", "Experiment Data.csv");
+				document.body.appendChild(link);
+
+				link.click();
+				//analyze and display brief total result after individual result.
+
+			} else {
+				addFunctionList[chartOrder[currentTrialOrder]]();
+			}	
+		}
+	}
+
+	function disagreeClicked () {
+		pText.removeChild(initPText);
+			
+		opdiv.removeChild(disagreebutton);
+		opdiv.removeChild(agreebutton);
+		pText.appendChild(finishPText);
+		opdiv.appendChild(buttonRestart);
+	}
+
+	function restartWin(){
+		pText.removeChild(finishPText);
+		opdiv.removeChild(restartbutton);
+
+		pText.appendChild(initPText);
+		opdiv.appendChild(buttonDisagree);
+		opdiv.appendChild(buttonAgree);
+		thead.selectAll("th").remove();
+		thead.selectAll("tr").remove();
+		tbody.selectAll("td").remove();
+		tbody.selectAll("tr").remove();
+
+		generateChartOrder();
+	}
+
+	function generateRandomList () {
+		for (i=0; i<itemNum; i++) {
+			randomList[i] = Math.random()*(randomRange-minRandomValue)+minRandomValue;
+		}
+	}
+
+	function selectRandomTwo () {
+		randomSelectTwo = [-1, -1];
+		randomSelectTwo[0] = Math.floor(Math.random()*itemNum);
+		while (randomSelectTwo[1] == -1 || randomSelectTwo[0]==randomSelectTwo[1]) {
+			randomSelectTwo[1] = Math.floor(Math.random()*itemNum);
+		}
+	}
+
+	function calcTruePercent () {
+		a = Math.min(randomList[randomSelectTwo[0]], randomList[randomSelectTwo[1]]);
+		b = Math.max(randomList[randomSelectTwo[0]], randomList[randomSelectTwo[1]]);
+		truePercent = Math.round(100*a/b);
+	}
+
+
+	function generateChartOrder() {
+		chartOrder = [];
+		for (i=0; i<trialMultiplier; i++){
+			temp = [];
+			for (t=0; t<chartTypeNum; t++) {
+				temp[t] = t;
+			}
+			while (temp.length>0) {
+				n = Math.floor(Math.random()*temp.length);
+				chartOrder[chartOrder.length]=temp[n];
+				temp.splice(n, 1);
+			}
+		}
+		currentTrialOrder = -1;
+		randomPID = Math.floor(Math.random()*(maxPID-minPID)+minPID);
+	}
+
+	function generateBarChart() {
+		console.log("generateBarChart");
+		generateRandomList();
+		selectRandomTwo();
+		calcTruePercent();
+
+		for (i=0; i<randomList.length; i++) {
+			svg.append("rect").attr("x", xscale(i+0.5)-autoBarWidth/2).attr("y", yscale(randomList[i])).attr("width", autoBarWidth).attr("height", yscale(0)-yscale(randomList[i])).attr("stroke", "#b0b0b0").attr("fill", "none");
+		}
+		svg.append("circle").attr("cx", xscale(randomSelectTwo[0]+0.5)).attr("cy", yscale(randomList[randomSelectTwo[0]]/2)).attr("r", 2).attr("fill", "black");
+		svg.append("circle").attr("cx", xscale(randomSelectTwo[1]+0.5)).attr("cy", yscale(randomList[randomSelectTwo[1]]/2)).attr("r", 2).attr("fill", "black");
+		svg.append("line").attr("x1", 0).attr("x2", svgWidth).attr("y1", yscale(0)).attr("y2", yscale(0)).attr("stroke", "#b0b0b0");	
+	}
+
+	function removeBarChart() {
+		console.log("removeBarChart");
+		svg.selectAll("rect").remove();
+		svg.selectAll("circle").remove();
+		svg.selectAll("line").remove();
+	}
+
+	function generatePieChart() {
+		console.log("generatePieChart");
+		generateRandomList();
+		selectRandomTwo();
+		calcTruePercent();
+		var arcs = svg.selectAll("g").data(pie(randomList)).enter().append("g").attr("transform", "translate("+svgWidth/2+", "+svgHeight/2+")");
+		arcs.append("path").attr("stroke", "#b0b0b0").attr("fill", "none").attr("d", function(d){if(d.value==randomList[randomSelectTwo[0]] || d.value==randomList[randomSelectTwo[1]]){x=arc.centroid(d)[0]; y=arc.centroid(d)[1]; svg.append("circle").attr("r", 2).attr("fill", "black").attr("transform", "translate("+(svgWidth/2+x)+", "+(svgHeight/2+y)+")");} return arc(d);});
+	}
+
+	function removePieChart() {
+		console.log("removePieChart");
+		svg.selectAll("path").remove();
+		svg.selectAll("g").remove();
+		svg.selectAll("circle").remove();
+	}
+
+	function generateStackedBar(){
+		console.log("generateStackedBar");
+		generateRandomList();
+		selectRandomTwo();
+		calcTruePercent();
+		sum = 0;
+		for (i=0; i<randomList.length; i++){
+			sum += randomList[i];
+		}
+		ypoint = yscale(0);
+		for (i=0; i<randomList.length; i++) {
+			ypoint -= hscale(randomRange*randomList[i]/sum);
+			svg.append("rect").attr("x", svgWidth/2-100).attr("y", ypoint).attr("width", 200).attr("height", hscale(randomRange*randomList[i]/sum)).attr("stroke", "#b0b0b0").attr("fill", "none");
+			if (i==randomSelectTwo[0] || i==randomSelectTwo[1]) {
+				svg.append("circle").attr("cx", svgWidth/2).attr("cy", ypoint+hscale(randomRange*randomList[i]/sum)/2).attr("r", 2).attr("fill", "black");
+			}
+		}
+		svg.append("line").attr("x1", 0).attr("x2", svgWidth).attr("y1", yscale(0)).attr("y2", yscale(0)).attr("stroke", "#b0b0b0");
+	}
+
+	function removeStackedBar() {
+		console.log("removeStackedBar");
+		svg.selectAll("rect").remove();
+		svg.selectAll("circle").remove();
+		svg.selectAll("line").remove();
+	}
+
+	function generateBubbleChart() {
+		console.log("generateBubbleChart");
+		generateRandomList();
+		selectRandomTwo();
+		calcTruePercent();
+		newlist = [];
+		for (i=0; i<randomList.length; i++){
+			newlist[i]={index: i, value: randomList[i]};
+		}
+		var data ={"children": newlist};
+		
+		rdata = d3.hierarchy(data).sum(function(d) { return d.value; }).sort(function(a, b) { return b.value - a.value; });
+		var nodes = svg.selectAll(".node").data(pack(rdata).descendants()).enter().append("g").attr("transform", function(d) {return "translate(" + d.x + "," + d.y + ")"; });
+		nodes.append("circle").attr("r", function(d) {if (d.value==randomList[randomSelectTwo[0]] || d.value==randomList[randomSelectTwo[1]]) {svg.append("circle").attr("r", 2).attr("fill", "black").attr("transform", "translate("+d.x+", "+d.y+")");} return d.r; }).attr("stroke", function(d){for (i=0; i<randomList.length; i++) {if(randomList[i]==d.value) {return "#b0b0b0";}} return "#f8f8f8";}).attr("fill", "none");
+	}
+
+	function removeBubbleChart() {
+		console.log("removeBubbleChart");
+		svg.selectAll("circle").remove();
+		svg.selectAll("g").remove();
+	}
+
+</script>
+</body>
+</html>
